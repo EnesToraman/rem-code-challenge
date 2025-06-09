@@ -1,35 +1,73 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
+import Stepper from "@components/Stepper";
+import SelectProduct from "@components/SelectProduct";
+import OtherStepsContent from "@components/OtherStepsContent";
+import ThemeToggleButton from "@components/ThemeToggleButton";
+import { useEffect, useState } from "react";
+import type { Product } from "@interfaces/Product";
+
+const stepLabels = {
+  Postcode: "Postcode",
+  WasteType: "Waste Type",
+  SelectSkip: "Select Skip",
+  PermitCheck: "Permit Check",
+  ChooseDate: "Choose Date",
+  Payment: "Payment"
+};
+
+const steps = [
+  { label: stepLabels.Postcode },
+  { label: stepLabels.WasteType },
+  { label: stepLabels.SelectSkip },
+  { label: stepLabels.PermitCheck },
+  { label: stepLabels.ChooseDate },
+  { label: stepLabels.Payment }
+];
 
 function App() {
-  const [count, setCount] = useState(0)
+  const [activeStepLabel, setActiveStepLabel] = useState<string>(stepLabels.SelectSkip);
+  const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
+  const isLastStep = activeStepLabel === steps[steps.length - 1].label;
+
+  useEffect(() => {
+    document.title = `${activeStepLabel} - REM Waste Management`;
+  }, [activeStepLabel]);
+
+  const handleNextStep = () => {
+    const currentIndex = steps.findIndex(step => step.label === activeStepLabel);
+    const nextIndex = currentIndex + 1;
+
+    if (nextIndex < steps.length) {
+      setActiveStepLabel(steps[nextIndex].label);
+    }
+  };
 
   return (
-    <>
-      <div>
-        <a href="https://vite.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
+    <div className="min-h-screen flex flex-col items-center pb-16 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100">
+      <div className="max-w-[1600px] w-full px-8 py-6">
+        <div className="pt-4 pb-6">
+          <Stepper
+            steps={steps}
+            activeStepLabel={activeStepLabel}
+            onStepChange={setActiveStepLabel}
+          />
+        </div>
+        {activeStepLabel === stepLabels.SelectSkip ? (
+          <SelectProduct
+            selectedProduct={selectedProduct}
+            setSelectedProduct={setSelectedProduct}
+            handleNextStep={handleNextStep}
+          />
+        ) : (
+          <OtherStepsContent
+            activeStepLabel={activeStepLabel}
+            isLastStep={isLastStep}
+            onNext={handleNextStep}
+          />
+        )}
+        <ThemeToggleButton />
       </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.tsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
-  )
+    </div>
+  );
 }
 
-export default App
+export default App;
